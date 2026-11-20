@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generator Prompt Modul DIAS</title>
+  <style>
+    :root {
+      --jtt: #003B73;
+      --jtt-dark: #002a52;
+      --jtt-soft: #e6eef6;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --ok: #166534;
+      --ok-bg: #dcfce7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, var(--jtt-dark), var(--jtt));
+      color: #fff;
+      padding: 28px 20px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    header h1 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 700; }
+    header p { margin: 0; opacity: .92; font-size: .98rem; }
+    main { padding: 20px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
+    }
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      color: var(--jtt);
+    }
+    .grid { display: grid; gap: 14px; }
+    label { display: block; font-weight: 600; font-size: .92rem; margin-bottom: 6px; }
+    label .req { color: #b91c1c; }
+    label .hint { font-weight: 400; color: var(--muted); font-size: .85rem; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+      font-size: .95rem;
+      background: #fff;
+      color: var(--text);
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--jtt);
+      box-shadow: 0 0 0 3px rgba(0,59,115,.15);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+    textarea.big { min-height: 120px; }
+    details {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: #f8fafc;
+    }
+    details > summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--jtt);
+      list-style: none;
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::before { content: "▸ "; }
+    details[open] > summary::before { content: "▾ "; }
+    details .inner { margin-top: 14px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px; }
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 600;
+      font-size: .95rem;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--jtt); color: #fff; }
+    .btn-primary:hover { background: var(--jtt-dark); }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .toast {
+      display: inline-block;
+      font-size: .9rem;
+      color: var(--ok);
+      background: var(--ok-bg);
+      padding: 6px 10px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .toast.show { opacity: 1; }
+    .out-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .out-head h2 { margin: 0; }
+    #output {
+      width: 100%;
+      min-height: 420px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: .85rem;
+      line-height: 1.45;
+      background: #0b1220;
+      color: #e5e7eb;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      white-space: pre;
+      overflow: auto;
+    }
+    .note {
+      font-size: .88rem;
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+    footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 8px 20px 28px; }
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.35rem; }
+      .card { padding: 16px; }
+      #output { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Generator Prompt Modul DIAS</h1>
+      <p>Buat prompt pembuatan aplikasi modul yang kompatibel DIAS (standar PTW). Cukup isi judul &amp; deskripsi.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <h2>Informasi Aplikasi</h2>
+      <div class="grid">
+        <div>
+          <label for="judul">Judul Aplikasi <span class="req">*</span></label>
+          <input type="text" id="judul" placeholder="Contoh: Safety Observation" autocomplete="off">
+        </div>
+        <div>
+          <label for="deskripsi">Deskripsi Aplikasi <span class="req">*</span> <span class="hint">(tujuan, masalah yang diselesaikan, pengguna utama)</span></label>
+          <textarea id="deskripsi" class="big" placeholder="Contoh: Aplikasi pelaporan dan tindak lanjut observasi keselamatan di area kerja, digunakan oleh pekerja lapangan, supervisor, dan admin HSE."></textarea>
+        </div>
+
+        <details>
+          <summary>Opsi lanjutan (opsional) — peran, fitur, data, offline, submodul</summary>
+          <div class="inner grid">
+            <div>
+              <label for="peran">Target Pengguna &amp; Peran <span class="hint">(beserta wewenang singkat)</span></label>
+              <textarea id="peran" placeholder="Contoh: Observer (buat laporan), Supervisor (review/tindak lanjut), Admin (master data & laporan)"></textarea>
+            </div>
+            <div>
+              <label for="fitur">Fitur &amp; Alur Utama</label>
+              <textarea id="fitur" placeholder="Contoh: buat observasi, upload foto, review & assign tindakan, verifikasi, penutupan, dashboard & export"></textarea>
+            </div>
+            <div>
+              <label for="entitas">Entitas Data Utama</label>
+              <textarea id="entitas" placeholder="Contoh: Observation, CorrectiveAction, Attachment, AuditLog"></textarea>
+            </div>
+            <div>
+              <label for="lampiran">Kebutuhan Lampiran/File/Export</label>
+              <textarea id="lampiran" placeholder="Contoh: upload foto bukti, generate & arsip PDF laporan, export rekap"></textarea>
+            </div>
+            <div>
+              <label for="offline">Kebutuhan Offline/Lapangan</label>
+              <input type="text" id="offline" placeholder="Contoh: YA - pencatatan observasi & foto saat sinyal buruk, sync saat online">
+            </div>
+            <div>
+              <label for="submodul">Submodul/Halaman untuk DIAS <span class="hint">(dipetakan ke details[].link)</span></label>
+              <textarea id="submodul" placeholder="Contoh: Dashboard (/), Buat Laporan (/observations/new), Tindak Lanjut (/actions), Admin (/admin)"></textarea>
+            </div>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button class="btn-primary" id="btnGen" type="button">Buat Prompt</button>
+          <button class="btn-secondary" id="btnClear" type="button">Bersihkan</button>
+        </div>
+      </div>
+      <p class="note">Opsi lanjutan yang dikosongkan akan diisi instruksi agar AI menentukan asumsi yang wajar.</p>
+    </div>
+
+    <div class="card">
+      <div class="out-head">
+        <h2>Prompt (siap salin ke Google AI Studio)</h2>
+        <div class="actions" style="margin:0">
+          <button class="btn-primary" id="btnCopy" type="button">Salin Prompt</button>
+          <span class="toast" id="toast">Tersalin ke clipboard</span>
+        </div>
+      </div>
+      <textarea id="output" readonly placeholder="Isi judul & deskripsi, lalu klik &quot;Buat Prompt&quot;..."></textarea>
+      <p class="note">Standar: Next.js (App Router) + React + Tailwind, PWA, Firebase Auth + Firestore (DB), Google Drive via Google Apps Script API (storage, lewat proxy /api/*), integrasi DIAS (iframe/new_tab, SSO param), RBAC & audit trail.</p>
+    </div>
+  </main>
+
+  <footer>
+    Generator Prompt Modul DIAS &middot; Berdasarkan Standar Modul DIAS (PTW-style)
+  </footer>
+
+<script type="text/plain" id="tpl">Kamu adalah senior full-stack engineer & software architect. Bangun aplikasi web modul bernama "__JUDUL__" untuk ekosistem DIAS (Digital Integrated Application System, JTT/Vopak).
+
+## 1) Konteks Aplikasi (dari user)
+- Judul: __JUDUL__
+- Deskripsi: __DESKRIPSI__
+- Target pengguna & peran: __PERAN__  (jika kosong, tentukan peran & matriks wewenang yang wajar dan jelaskan asumsi)
+- Fitur & alur utama: __FITUR__  (jika kosong, turunkan dari deskripsi)
+- Entitas data utama: __ENTITAS__  (jika kosong, turunkan dari deskripsi)
+- Kebutuhan lampiran/file/export: __LAMPIRAN__  (jika kosong, tentukan seperlunya)
+- Kebutuhan offline/lapangan: __OFFLINE__
+- Submodul/halaman untuk DIAS: __SUBMODUL__
+
+## 2) Tujuan & Batasan
+Buat aplikasi yang (a) berkualitas produksi setara pola E-PTW dan (b) bisa dipasang sebagai modul di DIAS. Hasilkan implementasi end-to-end (bukan skeleton kosong): struktur proyek lengkap, kode fungsional, konfigurasi, dan dokumentasi.
+
+## 3) Arsitektur & Stack STANDAR (WAJIB IKUTI)
+
+### 3.1 Stack
+- Frontend: **Next.js (App Router) + React + Tailwind CSS**.
+- PWA: manifest + service worker + ikon (192, 512, maskable, apple-touch-icon), metadata instalasi, mobile-first.
+- Bahasa UI: dukung label **Indonesia & Inggris** bila memungkinkan (minimal konsisten, default Indonesia).
+- Gaya visual: bersih & profesional, aksen biru JTT **#003B73** (dan/atau #003c71) + netral slate, aksesibel, nyaman di HP/tablet/desktop.
+
+### 3.2 Database & Storage (WAJIB)
+- **Database utama = Firebase (Auth + Cloud Firestore)** untuk semua data terstruktur: master data, user/profil/role mapping, transaksi/record, status, konfigurasi, notifikasi/inbox (bila ada), dan **audit log**.
+- **Storage file/lampiran/dokumen/arsip (PDF, gambar, file unggahan, export) = Google Drive**, diakses melalui **Google Apps Script (GAS) Web App sebagai API**.
+  - Jangan simpan file binary di Firestore. Simpan file ke Drive via GAS, lalu simpan **referensi/metadata** file di Firestore (fileId/url/folderId, nama, mimeType, size, uploader, entityId/nomor, timestamp).
+  - Simpan file dalam folder Drive terstruktur (folder induk dari env `DRIVE_FOLDER_ID`, subfolder per entitas/nomor).
+- **Integrasi eksternal (Drive, email, generate/arsip PDF, dsb.)** dilakukan lewat **Next.js Route Handlers `/api/*` sebagai proxy server** ke endpoint GAS (`/exec`) — bukan dipanggil langsung dari browser ke GAS untuk operasi sensitif/rahasia. Tujuan: hindari CORS, lindungi endpoint/konfigurasi, validasi & kontrol ukuran/timeout di server.
+- Sediakan `.env.example` lengkap dan README; **jangan hardcode secret/credential**. Bedakan variabel klien (`NEXT_PUBLIC_*`) dan server-only.
+
+### 3.3 Google Apps Script (GAS) sebagai API Drive/Storage
+- Sertakan folder `google-apps-script/` berisi `Code.gs` dan `appsscript.json` yang dibutuhkan modul ini.
+- Pola API berbasis JSON dengan field `action` (contoh pola PTW): minimal `uploadFile` (base64, fileName, mimeType, folder/entity context) mengembalikan `{status,url,folderId,folderUrl,...}`; tambahkan action lain bila relevan (mis. `sendEmail`, generate/archive PDF) sesuai kebutuhan modul.
+- Dokumentasikan setup: scope/izin (minimal Drive; tambah Mail/Spreadsheet/UrlFetch jika dipakai), fungsi otorisasi, Deploy sebagai Web App (Execute as: Me, Who has access: Anyone), penggunaan URL `/exec`, dan aturan **setiap perubahan kode wajib Deploy > New version**.
+
+## 4) Integrasi DIAS (WAJIB)
+
+### 4.1 Mode & URL
+- Aplikasi harus berjalan baik saat (a) **di-embed dalam iframe DIAS** maupun (b) **dibuka di tab/jendela baru**.
+- Sediakan **route/URL stabil** untuk beranda modul dan tiap sub-fungsi utama (untuk dipakai sebagai `iframeUrl` dan `details[].link`).
+- Saat di-iframe: layout **full-area & self-contained** (punya navigasi/header internal sendiri), responsif di viewport sempit. Pastikan konfigurasi deployment tidak memblokir embed yang sah bila mode iframe dipakai (pertimbangkan `frame-ancestors`/CSP sesuai kebutuhan).
+
+### 4.2 SSO / Konteks Identitas dari DIAS (query param)
+Saat dibuka dari DIAS, URL bisa membawa parameter: `dias_sso=1`, `dias_email`, `email`, `dias_name`, `dias_uid`, `dias_roles` (daftar role dipisah koma).
+- Wajib **membaca & menangani** parameter ini saat load: gunakan sebagai *hint* untuk prefill konteks user dan mempermudah onboarding/login.
+- Wajib punya **fallback** bila dibuka langsung tanpa parameter DIAS.
+- **Keamanan:** JANGAN mempercayai query param mentah untuk otorisasi data/aksi sensitif. Verifikasi identitas dengan mekanisme auth aplikasi sendiri dan tegakkan RBAC di sisi tepercaya (server/security rules), bukan hanya UI.
+
+### 4.3 Output Konfigurasi Modul DIAS
+Sertakan contoh JSON registrasi modul DIAS (objek `AppModule`) dan mapping route -> submodul, dengan struktur:
+```json
+{
+  "id": "module_id_unik",
+  "name": "Nama Modul",
+  "description": { "id": "...", "en": "..." },
+  "iconStr": "clipboard-list",
+  "iframeUrl": "https://<origin-modul>/",
+  "openMode": "iframe",
+  "details": [
+    { "id": "sub_id", "title": { "id": "...", "en": "..." }, "link": "https://<origin-modul>/path", "openMode": "iframe" }
+  ]
+}
+```
+Pilih `iconStr` yang relevan (opsi: home, document-text, shield-check, lock-closed, exclamation-circle, badge-check, clipboard-list, user-group, chart-bar, film).
+
+## 5) Kualitas Fungsional & Keamanan (STANDAR PTW)
+
+- **Workflow/Status eksplisit:** definisikan state machine/lifecycle entitas utama, transisi valid/invalid, dan tampilkan status dengan jelas.
+- **RBAC:** matriks peran vs aksi per status; enforce di UI dan (wajib) di lapisan tepercaya (Firestore Security Rules / server-side). Sediakan mekanisme admin/intervensi bila relevan dengan konfirmasi & pembatasan.
+- **Audit trail:** catat siapa, kapan, aksi, dari/ke status, dan alasan/catatan untuk aksi penting (buat/ubah/approve/reject/bypass/close/delete logis). Riwayat dapat ditinjau.
+- **Validasi & penanganan file:** validasi input (klien & server), batas tipe/ukuran file, timeout untuk proses berat (upload/generate), pesan error informatif.
+- **UX keadaan:** loading/progress, empty state, error & retry, konfirmasi aksi destruktif/kritis.
+- **Offline (jika relevan):** antrean lokal (IndexedDB/localStorage) + sinkronisasi saat online + indikator status jaringan.
+- **Notifikasi (jika relevan):** email/in-app untuk perubahan status penting.
+- **Testing:** sertakan unit test untuk logika bisnis inti (transisi status, permission/RBAC helper, validator, parser/util penting).
+
+## 6) Output yang HARUS Kamu Berikan
+
+1. **Struktur proyek lengkap** dan **semua file kode** yang diperlukan agar aplikasi bisa dijalankan (termasuk konfigurasi PWA, route `/api/*`, modul `src/lib`/util, komponen, halaman, test).
+2. **Kode Google Apps Script** (`google-apps-script/Code.gs`, `appsscript.json`) untuk kebutuhan storage/API modul ini + instruksi deploy.
+3. **Implementasi end-to-end** fitur & workflow sesuai konteks (bukan placeholder kosong).
+4. **Contoh JSON registrasi modul DIAS** dan mapping route -> `details[]`.
+5. **`.env.example`** (semua variabel klien & server, dengan deskripsi) dan **README.md** lengkap: tujuan, arsitektur, peran & workflow/status, setup lokal, konfigurasi Firebase & GAS/Drive, cara run/build/test, deploy, serta catatan keamanan & integrasi DIAS.
+6. **Checklist kepatuhan** terhadap: (a) kontrak integrasi DIAS (AppModule, iframe/new_tab, SSO params, fallback), (b) standar data (Firestore DB + Drive via GAS API, referensi file di Firestore), (c) RBAC/workflow/audit, (d) PWA/UX/testing.
+
+Jika ada asumsi yang kamu ambil karena input user kurang detail, tulis asumsi tersebut secara eksplisit di README.</script>
+
+<script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const tpl = $("tpl").textContent;
+    const out = $("output");
+    const toast = $("toast");
+    const fallback = "- (tentukan sendiri yang paling masuk akal & jelaskan asumsi)";
+
+    function val(id, useFallback) {
+      const v = $(id).value.trim();
+      if (v) return v;
+      return useFallback ? fallback : "";
+    }
+
+    function generate() {
+      const judul = $("judul").value.trim();
+      const deskripsi = $("deskripsi").value.trim();
+      if (!judul || !deskripsi) {
+        out.value = "";
+        out.placeholder = "Mohon isi Judul Aplikasi dan Deskripsi Aplikasi terlebih dahulu.";
+        return;
+      }
+      const offline = val("offline", false) || fallback;
+      const text = tpl
+        .replaceAll("__JUDUL__", judul)
+        .replaceAll("__DESKRIPSI__", deskripsi)
+        .replaceAll("__PERAN__", val("peran", true))
+        .replaceAll("__FITUR__", val("fitur", true))
+        .replaceAll("__ENTITAS__", val("entitas", true))
+        .replaceAll("__LAMPIRAN__", val("lampiran", true))
+        .replaceAll("__OFFLINE__", offline)
+        .replaceAll("__SUBMODUL__", val("submodul", true));
+      out.value = text;
+    }
+
+    function copy() {
+      if (!out.value) generate();
+      if (!out.value) return;
+      const show = () => {
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(out.value).then(show).catch(() => {
+          out.select();
+          document.execCommand("copy");
+          show();
+        });
+      } else {
+        out.select();
+        document.execCommand("copy");
+        show();
+      }
+    }
+
+    function clearAll() {
+      ["judul","deskripsi","peran","fitur","entitas","lampiran","offline","submodul"].forEach(id => $(id).value = "");
+      out.value = "";
+      out.placeholder = "Isi judul & deskripsi, lalu klik \"Buat Prompt\"...";
+      $("judul").focus();
+    }
+
+    $("btnGen").addEventListener("click", generate);
+    $("btnCopy").addEventListener("click", copy);
+    $("btnClear").addEventListener("click", clearAll);
+    ["judul","deskripsi","peran","fitur","entitas","lampiran","offline","submodul"].forEach(id => {
+      $(id).addEventListener("input", generate);
+    });
+  })();
+</script>
+</body>
+</html>
